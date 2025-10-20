@@ -4,23 +4,26 @@ class SubstrRank:
         self.right_rank = right_rank
         self.index = index
 
+
 def make_ranks(substr_rank, n):
     r = 1
     rank = [-1] * n
     rank[substr_rank[0].index] = r
-    for i in range(n):
+    for i in range(1, n):
         if (substr_rank[i].left_rank != substr_rank[i-1].left_rank or
-			substr_rank[i].right_rank != substr_rank[i-1].right_rank):
+                substr_rank[i].right_rank != substr_rank[i-1].right_rank):
             r += 1
         rank[substr_rank[i].index] = r
     return rank
+
 
 def suffix_array(T):
     n = len(T)
     substr_rank = []
 
     for i in range(n):
-        substr_rank.append(SubstrRank(ord(T[i]), ord(T[i + 1]) if i < n-1 else 0, i))
+        substr_rank.append(SubstrRank(
+            ord(T[i]), ord(T[i + 1]) if i < n-1 else 0, i))
 
     substr_rank.sort(key=lambda sr: (sr.left_rank, sr.right_rank))
 
@@ -29,9 +32,11 @@ def suffix_array(T):
         rank = make_ranks(substr_rank, n)
 
         for i in range(n):
-            substr_rank[i].left_rank = rank[i]
-            substr_rank[i].right_rank = rank[i+l] if i+l < n else 0
-            substr_rank[i].index = i
+            substr_rank[i] = SubstrRank(rank[substr_rank[i].index],
+                                        rank[substr_rank[i].index +
+                                             l] if substr_rank[i].index + l < n else 0,
+                                        substr_rank[i].index)
+
         l *= 2
 
         substr_rank.sort(key=lambda sr: (sr.left_rank, sr.right_rank))
@@ -39,6 +44,7 @@ def suffix_array(T):
     SA = [substr_rank[i].index for i in range(n)]
 
     return SA
+
 
 SA = suffix_array("mississippi")
 print(SA)

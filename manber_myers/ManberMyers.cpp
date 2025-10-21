@@ -18,10 +18,10 @@ public:
     }
 };
 
-vector<int> makeRanks(const vector<SubstrRank> &substr_rank, int n)
+void makeRanks(const vector<SubstrRank> &substr_rank, int n, vector<int>& rank)
 {
     int r = 1;
-    vector<int> rank(n, -1);
+    rank.resize(n, -1);
     rank[substr_rank[0].index] = r;
 
     for (int i = 1; i < n; i++)
@@ -32,14 +32,13 @@ vector<int> makeRanks(const vector<SubstrRank> &substr_rank, int n)
         }
         rank[substr_rank[i].index] = r;
     }
-
-    return rank;
 }
 
 vector<int> suffixArray(const string &T)
 {
     int n = T.size();
     vector<SubstrRank> substr_rank;
+    substr_rank.reserve(n);
 
     for (int i = 0; i < n; i++)
     {
@@ -55,9 +54,10 @@ vector<int> suffixArray(const string &T)
         return a.leftRank < b.leftRank; });
 
     int l = 2;
+    vector<int> rank;
     while (l < n)
     {
-        vector<int> rank = makeRanks(substr_rank, n);
+        makeRanks(substr_rank, n, rank);
 
         for (int i = 0; i < n; i++)
         {
@@ -80,6 +80,52 @@ vector<int> suffixArray(const string &T)
         SA[i] = substr_rank[i].index;
 
     return SA;
+}
+
+vector<int> searchPattern(const string &T, const string &pattern, const vector<int> &SA)
+{
+    vector<int> occurrences;
+    int n = T.size();
+    int m = pattern.size();
+    
+    if (m == 0 || m > n) return occurrences;
+    
+    int left = 0, right = n;
+    while (left < right)
+    {
+        int mid = (left + right) / 2;
+        string suffix = T.substr(SA[mid], min(m, n - SA[mid]));
+        if (suffix < pattern)
+            left = mid + 1;
+        else
+            right = mid;
+    }
+    int leftBound = left;
+    
+    left = 0;
+    right = n;
+    while (left < right)
+    {
+        int mid = (left + right) / 2;
+        string suffix = T.substr(SA[mid], min(m, n - SA[mid]));
+        if (suffix <= pattern)
+            left = mid + 1;
+        else
+            right = mid;
+    }
+    int rightBound = right;
+    
+    for (int i = leftBound; i < rightBound; i++)
+    {
+        if (SA[i] + m <= n)
+        {
+            string suffix = T.substr(SA[i], m);
+            if (suffix == pattern)
+                occurrences.push_back(SA[i]);
+        }
+    }
+    
+    return occurrences;
 }
 
 int main()

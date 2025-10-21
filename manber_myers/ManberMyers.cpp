@@ -1,7 +1,8 @@
+#include <algorithm>
 #include <bits/stdc++.h>
-#include <vector>
-#include <string>
+#include <chrono>
 using namespace std;
+using namespace std::chrono;
 
 struct SubstrRank
 {
@@ -18,6 +19,7 @@ public:
     }
 };
 
+//Ahora se pasa el vector de enteros como referencia
 void makeRanks(const vector<SubstrRank> &substr_rank, int n, vector<int>& rank)
 {
     int r = 1;
@@ -82,6 +84,7 @@ vector<int> suffixArray(const string &T)
     return SA;
 }
 
+//Encuentra todas las recurrencias de un patron
 vector<int> searchPattern(const string &T, const string &pattern, const vector<int> &SA)
 {
     vector<int> occurrences;
@@ -128,14 +131,48 @@ vector<int> searchPattern(const string &T, const string &pattern, const vector<i
     return occurrences;
 }
 
+//Funcion para leer el archivo
+string readFile(string &nombre){
+    ifstream file(nombre);
+    if (!file.is_open()){
+        cout << "No se pudo abrir el archivo" << endl;
+        return "";
+    }
+
+    stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
+
+
 int main()
 {
-    string T = "mississippi";
-    vector<int> SA = suffixArray(T);
+    string nombre = "../libros/homer.txt";
+    string patron = "of";
 
-    for (int i : SA)
-        cout << i << " ";
-    cout << endl;
+    cout << nombre << endl;
+    string T = readFile(nombre);
+    int n = T.size();
+    size_t memoria = n*12 + n*4 + n*4 + n;
+    cout << "Memoria estimada: " << memoria / (1024.0 * 1024.0) << " MB" << endl;
+    auto start = high_resolution_clock::now();
+    vector<int> SA = suffixArray(T);
+    auto end = high_resolution_clock::now();
+
+    double constructionTime = duration_cast<milliseconds>(end - start).count();
+    cout << "Tiempo de ejecucion: " << constructionTime << " ms" << endl;
+
+    vector<int> posiciones = searchPattern(T, patron, SA);
+    cout << "Ocurrencias encontradas del patron: " << posiciones.size() << endl;
+
+    if (!posiciones.empty()){
+        cout << "Primeras 10 posiciones: ";
+        for (int i = 0; i < 10; i++){
+            cout << posiciones[i] << " ";
+        }
+        cout << endl;
+    }
+
 
     return 0;
 }
